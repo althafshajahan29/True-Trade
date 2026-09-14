@@ -1,0 +1,22 @@
+import cors from 'cors';
+import express, { Express } from 'express';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler';
+import { apiRouter } from './routes';
+
+export function createApp(): Express {
+  const app = express();
+
+  app.use(cors());
+  app.use(express.json());
+
+  app.get('/health', (_req, res) => {
+    res.json({ status: 'ok', service: 'right-trade-api' });
+  });
+
+  app.use('/', apiRouter);
+
+  app.use(notFoundHandler);
+  app.use(errorHandler);
+
+  return app;
+}

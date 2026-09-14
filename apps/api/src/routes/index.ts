@@ -1,0 +1,29 @@
+import { Router } from 'express';
+import { authRouter } from './auth.routes';
+import { usersRouter } from './users.routes';
+import { strategiesRouter } from './strategies.routes';
+import { backtestsRouter } from './backtests.routes';
+import { botsRouter } from './bots.routes';
+import { positionsRouter, tradesRouter } from './trades.routes';
+import { providersRouter } from './providers.routes';
+import { subscriptionsRouter } from './subscriptions.routes';
+import { riskRouter } from './risk.routes';
+import { alertsRouter } from './alerts.routes';
+import { analyticsRouter } from './analytics.routes';
+import { marketRouter } from './market.routes';
+
+export const apiRouter = Router();
+
+apiRouter.use('/auth', authRouter);
+apiRouter.use('/me', usersRouter);
+apiRouter.use('/strategies', strategiesRouter);
+apiRouter.use('/backtests', backtestsRouter);
+apiRouter.use('/bots', botsRouter);
+apiRouter.use('/trades', tradesRouter);
+apiRouter.use('/positions', positionsRouter);
+apiRouter.use('/providers', providersRouter);
+apiRouter.use('/copy-subscriptions', subscriptionsRouter);
+apiRouter.use('/risk-settings', riskRouter);
+apiRouter.use('/alerts', alertsRouter);
+apiRouter.use('/analytics', analyticsRouter);
+apiRouter.use('/market', marketRouter);
