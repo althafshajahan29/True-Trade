@@ -4,6 +4,10 @@ A mobile-first trading automation platform: build rule-based strategies, backtes
 against historical data, run them as paper-trading bots, and browse/copy other strategy
 providers — all with a dark-mode-first, original UI (not a MetaTrader clone).
 
+The same codebase ships as a native app (iOS/Android via Expo) **and** a web app — the
+web build compiles the identical screens, navigation, and stores through `react-native-web`,
+so there's exactly one UI to maintain.
+
 This is an MVP built for extensibility: real broker/exchange integrations, live trading,
 and richer analytics can be layered on top of the existing service/data-access boundaries
 without reworking the app.
@@ -39,6 +43,9 @@ without reworking the app.
 - `src/components/ui` — reusable design-system components (Card, Button, Badge, Input, StatTile, …)
 - `src/components/charts` — lightweight SVG equity-curve and bar charts (no external chart lib)
 - `src/screens` — one folder per feature area, matching the navigation structure
+- `src/components/WebAppShell.tsx` — on web only, centers the app into a fixed-width
+  framed column above the phone breakpoint instead of stretching full-bleed across a
+  desktop browser; a no-op on native
 
 ## Running it
 
@@ -69,6 +76,17 @@ the same machine as the API. For a physical device or Android emulator, set
 EXPO_PUBLIC_API_URL=http://192.168.1.20:4000 npm run start:mobile
 ```
 
+### Web
+
+```bash
+npm run start:web           # expo start --web — dev server with hot reload, opens a browser tab
+# or, for a static production build:
+npm run build:web           # outputs to apps/mobile/dist — serve it with any static file host
+```
+
+The web build talks to the same `EXPO_PUBLIC_API_URL` (defaulting to `http://localhost:4000`),
+baked in at build time — set it before running `build:web` if the API lives elsewhere.
+
 ## Tests & verification
 
 ```bash
@@ -76,9 +94,12 @@ npm run test:api            # Vitest: rule engine, backtest engine, and API rout
 npm run typecheck           # tsc --noEmit across shared, api, and mobile
 ```
 
-The mobile app has also been verified to bundle successfully end-to-end via
-`npx expo export` (Metro resolves the `@right-trade/shared` workspace package, Babel
-transforms, and the full dependency graph without errors).
+The mobile app has also been verified to bundle successfully end-to-end for native via
+`npx expo export` and for web via `npm run build:web` (Metro resolves the
+`@right-trade/shared` workspace package, Babel transforms, and the full dependency graph
+without errors). The web build was additionally exercised in a real headless browser —
+signing in, navigating every tab, running a live backtest, and opening bot/analytics/settings
+detail screens — to confirm it actually renders and functions, not just that it compiles.
 
 ## API overview
 
@@ -105,4 +126,5 @@ with an appropriate HTTP status.
 - Push notifications (alerts are in-app/API only for now; notification preferences are
   already modeled and stored).
 - Two-factor authentication (UI entry point exists in Settings, not wired up).
-- Web/desktop responsive layout — the app is designed mobile-first.
+- Full desktop layout — the web build centers the mobile-first UI in a fixed-width
+  column rather than re-flowing it into a true multi-column desktop dashboard.

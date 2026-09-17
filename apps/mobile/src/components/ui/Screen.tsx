@@ -25,7 +25,7 @@ export function Screen({
   const { palette } = useTheme();
 
   const content = (
-    <View style={[{ padding: spacing.lg, paddingBottom: spacing.xxxl }, contentStyle]}>{children}</View>
+    <View style={[{ flex: 1, padding: spacing.lg, paddingBottom: spacing.xxxl }, contentStyle]}>{children}</View>
   );
 
   return (

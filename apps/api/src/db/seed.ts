@@ -301,6 +301,24 @@ async function seed(): Promise<void> {
       exitReason: pnl >= 0 ? 'take_profit' : 'stop_loss',
     };
     tradeRepo.create(trade);
+
+    botRepo.addSignal({
+      id: generateId(),
+      botId: t.botId,
+      type: t.direction === 'long' ? 'entry_long' : 'entry_short',
+      reason: `Entry rule triggered for ${t.symbol}`,
+      price: t.entry,
+      createdAt: openedAt,
+    });
+    botRepo.addSignal({
+      id: generateId(),
+      botId: t.botId,
+      type: 'exit',
+      reason: `Closed ${t.direction} ${t.symbol} @ ${t.exit} (${trade.exitReason})`,
+      price: t.exit,
+      createdAt: closedAt,
+    });
+    botRepo.touchSignal(t.botId, closedAt);
   }
   userRepo.adjustPaperBalance(user.id, realizedTotal);
 

@@ -4,6 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from './src/theme';
 import { RootNavigator } from './src/navigation/RootNavigator';
+import { WebAppShell } from './src/components/WebAppShell';
 
 export default function App() {
   const { palette, isDark } = useTheme();
@@ -23,9 +24,11 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <StatusBar style={isDark ? 'light' : 'dark'} />
-      <NavigationContainer theme={navigationTheme}>
-        <RootNavigator />
-      </NavigationContainer>
+      <WebAppShell>
+        <NavigationContainer theme={navigationTheme}>
+          <RootNavigator />
+        </NavigationContainer>
+      </WebAppShell>
     </SafeAreaProvider>
   );
 }
