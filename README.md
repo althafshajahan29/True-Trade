@@ -84,8 +84,27 @@ npm run start:web           # expo start --web — dev server with hot reload, o
 npm run build:web           # outputs to apps/mobile/dist — serve it with any static file host
 ```
 
-The web build talks to the same `EXPO_PUBLIC_API_URL` (defaulting to `http://localhost:4000`),
-baked in at build time — set it before running `build:web` if the API lives elsewhere.
+The web build talks to `EXPO_PUBLIC_API_URL` if set at build time; otherwise, on web, it
+automatically calls whatever origin served the page (`window.location.origin`). That's what
+makes the single-service deploy below need zero configuration.
+
+## Deploying (single service, e.g. Render.com free tier)
+
+The API can serve the built web app itself, so one deployment is the whole website —
+no separate frontend host, no CORS setup, no API URL to configure.
+
+- **Build command:** `npm install && npm run build:release`
+- **Start command:** `npm run start:release`
+- **Node version:** 22 (set `NODE_VERSION=22` as an environment variable if the host asks)
+
+`build:release` builds the shared package, the API, and the web app (in that order) into
+`apps/mobile/dist`. `start:release` seeds demo data if the database doesn't have it yet
+(safe to run every boot — it skips if the demo account already exists) and starts the API,
+which serves the API routes **and** the website from the same port.
+
+⚠️ SQLite lives on local disk. On a host with ephemeral storage (most free tiers), the
+database resets on every redeploy/restart — fine for trying it out, not for real user data.
+For anything persistent, point `DB_PATH` at a mounted volume the host doesn't wipe.
 
 ## Tests & verification
 
@@ -100,6 +119,8 @@ The mobile app has also been verified to bundle successfully end-to-end for nati
 without errors). The web build was additionally exercised in a real headless browser —
 signing in, navigating every tab, running a live backtest, and opening bot/analytics/settings
 detail screens — to confirm it actually renders and functions, not just that it compiles.
+The single-service deploy path (API serving its own web build on one port, with no
+`EXPO_PUBLIC_API_URL` set) was verified the same way.
 
 ## API overview
 
