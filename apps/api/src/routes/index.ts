@@ -11,6 +11,7 @@ import { riskRouter } from './risk.routes';
 import { alertsRouter } from './alerts.routes';
 import { analyticsRouter } from './analytics.routes';
 import { marketRouter } from './market.routes';
+import { signalsRouter } from './signals.routes';
 
 export const apiRouter = Router();
 
@@ -27,3 +28,4 @@ apiRouter.use('/risk-settings', riskRouter);
 apiRouter.use('/alerts', alertsRouter);
 apiRouter.use('/analytics', analyticsRouter);
 apiRouter.use('/market', marketRouter);
+apiRouter.use('/signals', signalsRouter);

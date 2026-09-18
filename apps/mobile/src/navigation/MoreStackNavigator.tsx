@@ -9,6 +9,8 @@ import { AlertsScreen } from '../screens/alerts/AlertsScreen';
 import { RiskSettingsScreen } from '../screens/risk/RiskSettingsScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
 import { TradeHistoryScreen } from '../screens/trades/TradeHistoryScreen';
+import { SignalsScreen } from '../screens/signals/SignalsScreen';
+import { SignalDetailScreen } from '../screens/signals/SignalDetailScreen';
 
 const Stack = createNativeStackNavigator<MoreStackParamList>();
 
@@ -22,6 +24,8 @@ export function MoreStackNavigator() {
       <Stack.Screen name="RiskSettings" component={RiskSettingsScreen} options={{ title: '' }} />
       <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: '' }} />
       <Stack.Screen name="TradeHistory" component={TradeHistoryScreen} options={{ title: '' }} />
+      <Stack.Screen name="Signals" component={SignalsScreen} options={{ title: '' }} />
+      <Stack.Screen name="SignalDetail" component={SignalDetailScreen} options={{ title: '' }} />
     </Stack.Navigator>
   );
 }

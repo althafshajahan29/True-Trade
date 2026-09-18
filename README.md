@@ -31,8 +31,13 @@ without reworking the app.
   - `paperTrading.engine.ts` — ticks every running bot against fresh market data and executes paper trades
 - `src/services/marketData.service.ts` — deterministic seeded mock market data (swap for a real feed later)
 - `src/services/copyTrading.service.ts` — simulated trade mirroring for copy subscriptions
+- `src/engines/signalScore.engine.ts` + `newsSentiment.engine.ts` — Market Intelligence: a
+  transparent composite score (technical momentum + explosive-demand breakout detection +
+  optional news-headline sentiment). See "Market Intelligence" below for what this is and
+  isn't.
 - `src/routes` — REST endpoints, thin controllers over the services above
-- `tests/` — Vitest unit tests for the rule engine and backtest engine, plus a Supertest API test
+- `tests/` — Vitest unit tests for the rule engine, backtest engine, signal-scoring engines,
+  and a Supertest API test
 
 ### Mobile (`apps/mobile`)
 
@@ -88,6 +93,36 @@ The web build talks to `EXPO_PUBLIC_API_URL` if set at build time; otherwise, on
 automatically calls whatever origin served the page (`window.location.origin`). That's what
 makes the single-service deploy below need zero configuration.
 
+## Market Intelligence
+
+A "More → Market Intelligence" screen showing a composite score per symbol (-100..+100),
+plus an "explosive demand" screener for unusual volume/price/volatility activity. Every
+score shows its full breakdown — nothing is a black box.
+
+**What it actually is:** a heuristic research aid, built from three factors:
+1. **Technical momentum** — RSI, MACD, and price-vs-50-period-average, computed from our
+   own candle data. Always available.
+2. **Explosive demand** — flags symbols with recent volume/price/volatility well above their
+   own baseline. Always available, computed the same way.
+3. **News sentiment** *(optional)* — recent headlines for US-listed stocks, classified by a
+   transparent keyword scan (not a black-box model) as positive/negative/neutral, plus a
+   lightweight "controversy" flag for lawsuit/recall/investigation-type language. Requires a
+   free [Finnhub](https://finnhub.io) API key — without one, this factor is simply omitted
+   and the composite score reweights across the remaining two rather than guessing.
+
+**What it is not, and never will be from free data sources:** a system that predicts whether
+a price goes up or down. Nothing does that reliably — professional funds included. It also
+does not (and cannot, without paid institutional data) include options gamma exposure, short
+interest, credit ratings, ETF/index flows, or a real ESG controversy score — see the code
+comments in `signalScore.engine.ts` / `newsSentiment.engine.ts` for why each of those was
+deliberately left out rather than faked with unreliable scraping.
+
+**To enable news sentiment:** get a free key at finnhub.io (no card required), then set
+`FINNHUB_API_KEY` as an environment variable wherever the API runs (locally, or in your
+hosting provider's dashboard). Scores refresh automatically every 10 minutes
+(`SIGNAL_REFRESH_INTERVAL_MS` to change that); the first request for a symbol computes it
+on demand if the background refresh hasn't run yet.
+
 ## Deploying (single service, e.g. Render.com free tier)
 
 The API can serve the built web app itself, so one deployment is the whole website —
@@ -132,7 +167,8 @@ REST API at `http://localhost:4000`. All endpoints except `/health` and `/auth/*
 `/bots/:id/{start,pause,resume,stop,clone}`, `/trades`, `/positions`, `/providers`,
 `/providers/:id`, `/copy-subscriptions`, `/risk-settings`, `/alerts`,
 `/alerts/:id/read`, `/alerts/price-rules`, `/analytics/overview`, `/analytics/performance`,
-`/market/instruments`, `/market/candles`, `/market/quote`.
+`/market/instruments`, `/market/candles`, `/market/quote`, `/signals`, `/signals/explosive`,
+`/signals/detail`.
 
 Errors are returned as `{ "error": { "code": "...", "message": "...", "details": {...} } }`
 with an appropriate HTTP status.
@@ -149,3 +185,10 @@ with an appropriate HTTP status.
 - Two-factor authentication (UI entry point exists in Settings, not wired up).
 - Full desktop layout — the web build centers the mobile-first UI in a fixed-width
   column rather than re-flowing it into a true multi-column desktop dashboard.
+- SEC Form 4 insider-trading signal — genuinely free, structured, government data (no
+  scraping, no paid API), but a distinct chunk of work (ticker→CIK mapping, XML parsing)
+  deliberately left out of this pass. Good next addition to Market Intelligence.
+- Options gamma exposure, short interest, credit ratings, ETF/index flows, and real ESG
+  controversy scores are intentionally not implemented — no free, reliable API exists for
+  any of them (see "Market Intelligence" above). They'd require paid institutional data
+  providers.

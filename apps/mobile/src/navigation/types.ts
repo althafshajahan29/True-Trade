@@ -36,6 +36,8 @@ export type MoreStackParamList = {
   RiskSettings: undefined;
   Settings: undefined;
   TradeHistory: undefined;
+  Signals: undefined;
+  SignalDetail: { symbol: string };
 };
 
 export type MainTabParamList = {

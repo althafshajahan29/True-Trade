@@ -9,4 +9,5 @@ export * from './provider';
 export * from './risk';
 export * from './alert';
 export * from './analytics';
+export * from './signal';
 export * from './api';

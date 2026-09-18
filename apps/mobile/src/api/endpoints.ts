@@ -12,13 +12,16 @@ import {
   CreateBotRequest,
   CreateCopySubscriptionRequest,
   DashboardOverview,
+  ExplosiveCandidate,
   Instrument,
+  NewsHeadline,
   PerformanceMetrics,
   Position,
   PriceAlertRule,
   ProviderProfile,
   Quote,
   RiskSettings,
+  SignalScore,
   SignInRequest,
   SignUpRequest,
   Strategy,
@@ -127,4 +130,11 @@ export const marketApi = {
       )
       .then((r) => r.items),
   quote: (symbol: string) => api.get<Quote>(`/market/quote?symbol=${encodeURIComponent(symbol)}`),
+};
+
+export const signalsApi = {
+  list: () => api.get<Items<SignalScore>>('/signals').then((r) => r.items),
+  explosive: (limit = 5) => api.get<Items<ExplosiveCandidate>>(`/signals/explosive?limit=${limit}`).then((r) => r.items),
+  detail: (symbol: string) =>
+    api.get<{ score: SignalScore; headlines: NewsHeadline[] }>(`/signals/detail?symbol=${encodeURIComponent(symbol)}`),
 };

@@ -7,6 +7,7 @@ export * from './Input';
 export * from './ListRow';
 export * from './PillTabs';
 export * from './Screen';
+export * from './ScoreBar';
 export * from './Section';
 export * from './StateViews';
 export * from './StatTile';

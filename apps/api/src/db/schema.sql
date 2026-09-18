@@ -260,3 +260,32 @@ CREATE TABLE IF NOT EXISTS candles (
   volume REAL NOT NULL,
   PRIMARY KEY (symbol, timeframe, timestamp)
 );
+
+-- Market Intelligence: cached composite signal scores and the news
+-- headlines behind them. Refreshed periodically by a background job
+-- (see engines/signalScore.engine.ts + services/signal.service.ts) rather
+-- than computed per-request, since the news portion is rate-limited.
+CREATE TABLE IF NOT EXISTS signal_scores (
+  symbol TEXT PRIMARY KEY,
+  asset_class TEXT NOT NULL,
+  composite_score REAL NOT NULL,
+  classification TEXT NOT NULL,
+  technical_factor TEXT NOT NULL,  -- json SignalFactor
+  explosive_factor TEXT NOT NULL,  -- json SignalFactor
+  news_factor TEXT,                -- json SignalFactor | null
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS news_headlines (
+  id TEXT PRIMARY KEY,
+  symbol TEXT NOT NULL,
+  headline TEXT NOT NULL,
+  source TEXT NOT NULL,
+  url TEXT NOT NULL,
+  sentiment TEXT NOT NULL,
+  is_controversy INTEGER NOT NULL DEFAULT 0,
+  published_at TEXT NOT NULL,
+  fetched_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_news_headlines_symbol ON news_headlines(symbol);

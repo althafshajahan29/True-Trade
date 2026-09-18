@@ -2,16 +2,17 @@ import React, { useCallback } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { Pressable, View } from 'react-native';
-import { Bot, Trade } from '@right-trade/shared';
+import { Bot, SignalScore, Trade } from '@right-trade/shared';
 import { EquityCurveChart } from '../../components/charts/EquityCurveChart';
-import { Avatar, Badge, botStatusTone, Card, EmptyState, ErrorState, LoadingState, Screen, Section, StatRow, StatTile, Text } from '../../components/ui';
+import { Avatar, Badge, botStatusTone, Card, EmptyState, ErrorState, LoadingState, Screen, ScoreBar, Section, StatRow, StatTile, Text } from '../../components/ui';
 import { spacing } from '../../theme/tokens';
 import { useTheme } from '../../theme';
 import { useAuthStore } from '../../store/authStore';
-import { analyticsApi, botsApi, tradesApi } from '../../api/endpoints';
+import { analyticsApi, botsApi, signalsApi, tradesApi } from '../../api/endpoints';
 import { useAsync } from '../../hooks/useAsync';
 import { formatCurrency, formatPercent, formatRelativeTime } from '../../utils/format';
 import { DashboardStackParamList } from '../../navigation/types';
+import { classificationLabel, classificationTone } from '../signals/classification';
 
 type Props = NativeStackScreenProps<DashboardStackParamList, 'Dashboard'>;
 
@@ -22,12 +23,14 @@ export function DashboardScreen({ navigation }: Props) {
   const overview = useAsync(() => analyticsApi.overview(), []);
   const bots = useAsync(() => botsApi.list(), []);
   const trades = useAsync(() => tradesApi.list(), []);
+  const signals = useAsync(() => signalsApi.list(), []);
 
   useFocusEffect(
     useCallback(() => {
       overview.refetch();
       bots.refetch();
       trades.refetch();
+      signals.refetch();
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []),
   );
@@ -37,6 +40,7 @@ export function DashboardScreen({ navigation }: Props) {
     overview.refresh();
     bots.refresh();
     trades.refresh();
+    signals.refresh();
   };
 
   if (overview.isLoading) return <Screen><LoadingState label="Loading your dashboard…" /></Screen>;
@@ -94,6 +98,33 @@ export function DashboardScreen({ navigation }: Props) {
           <EquityCurveChart data={data.equityCurve} />
         </View>
       </Card>
+
+      <Section
+        title="Market pulse"
+        actionLabel="View all"
+        onAction={() => (navigation.getParent()?.navigate as (...args: unknown[]) => void)?.('MoreTab', { screen: 'Signals' })}
+      >
+        {signals.isLoading ? (
+          <LoadingState label="Computing signal scores…" />
+        ) : (signals.data ?? []).length === 0 ? (
+          <EmptyState title="No signals yet" message="Market Intelligence scores refresh in the background." />
+        ) : (
+          <View style={{ gap: spacing.sm }}>
+            {(signals.data ?? []).slice(0, 3).map((score) => (
+              <SignalPulseRow
+                key={score.symbol}
+                score={score}
+                onPress={() =>
+                  (navigation.getParent()?.navigate as (...args: unknown[]) => void)?.('MoreTab', {
+                    screen: 'SignalDetail',
+                    params: { symbol: score.symbol },
+                  })
+                }
+              />
+            ))}
+          </View>
+        )}
+      </Section>
 
       <Section title="Top bots" actionLabel="View all" onAction={() => navigation.getParent()?.navigate('BotsTab' as never)}>
         {bots.isLoading ? (
@@ -156,6 +187,20 @@ function BotRow({ bot, onPress }: { bot: Bot; onPress: () => void }) {
           </Text>
         </View>
         <Badge label={bot.status} tone={botStatusTone(bot.status)} dot />
+      </Card>
+    </Pressable>
+  );
+}
+
+function SignalPulseRow({ score, onPress }: { score: SignalScore; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress}>
+      <Card style={{ gap: spacing.sm }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text variant="bodyMedium">{score.symbol}</Text>
+          <Badge label={classificationLabel(score.classification)} tone={classificationTone(score.classification)} />
+        </View>
+        <ScoreBar score={score.compositeScore} height={6} />
       </Card>
     </Pressable>
   );
