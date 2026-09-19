@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { Button, Input, Screen, Text } from '../../components/ui';
 import { spacing } from '../../theme/tokens';
 import { useAuthStore } from '../../store/authStore';
+import { useIsDesktop } from '../../hooks/useIsDesktop';
 import { AuthStackParamList } from '../../navigation/types';
 import { isValidEmail } from '@right-trade/shared';
 
@@ -15,6 +16,7 @@ export function SignUpScreen({ navigation }: Props) {
   const [password, setPassword] = useState('');
   const [fieldError, setFieldError] = useState<string | null>(null);
   const { signUp, isSubmitting, error, clearError } = useAuthStore();
+  const isDesktop = useIsDesktop();
 
   const handleSubmit = async () => {
     clearError();
@@ -26,7 +28,7 @@ export function SignUpScreen({ navigation }: Props) {
   };
 
   return (
-    <Screen>
+    <Screen contentStyle={isDesktop ? { maxWidth: 420, alignSelf: 'center', width: '100%' } : undefined}>
       <View style={{ gap: spacing.xs, marginTop: spacing.lg }}>
         <Text variant="h1">Create your account</Text>
         <Text variant="body" tone="secondary">

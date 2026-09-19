@@ -5,11 +5,13 @@ import { Button, Text } from '../../components/ui';
 import { spacing } from '../../theme/tokens';
 import { useTheme } from '../../theme';
 import { useAuthStore } from '../../store/authStore';
+import { useIsDesktop } from '../../hooks/useIsDesktop';
 
 export function RiskDisclaimerScreen() {
   const { palette } = useTheme();
   const [accepting, setAccepting] = useState(false);
   const acceptRiskDisclaimer = useAuthStore((s) => s.acceptRiskDisclaimer);
+  const isDesktop = useIsDesktop();
 
   const handleAccept = async () => {
     setAccepting(true);
@@ -22,7 +24,13 @@ export function RiskDisclaimerScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing.xxxl }}>
+      <ScrollView
+        contentContainerStyle={
+          isDesktop
+            ? { padding: spacing.lg, paddingBottom: spacing.xxxl, maxWidth: 640, alignSelf: 'center', width: '100%' }
+            : { padding: spacing.lg, paddingBottom: spacing.xxxl }
+        }
+      >
         <Text variant="h1">Before you start trading</Text>
         <Text variant="body" tone="secondary" style={{ marginTop: spacing.sm }}>
           Please read and accept the following before using Right Trade.

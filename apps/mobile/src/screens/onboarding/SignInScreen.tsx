@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { Button, Input, Screen, Text } from '../../components/ui';
 import { spacing } from '../../theme/tokens';
 import { useAuthStore } from '../../store/authStore';
+import { useIsDesktop } from '../../hooks/useIsDesktop';
 import { AuthStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'SignIn'>;
@@ -12,6 +13,7 @@ export function SignInScreen({ navigation }: Props) {
   const [email, setEmail] = useState('demo@righttrade.app');
   const [password, setPassword] = useState('');
   const { signIn, isSubmitting, error, clearError } = useAuthStore();
+  const isDesktop = useIsDesktop();
 
   const handleSubmit = async () => {
     clearError();
@@ -19,7 +21,7 @@ export function SignInScreen({ navigation }: Props) {
   };
 
   return (
-    <Screen>
+    <Screen contentStyle={isDesktop ? { maxWidth: 420, alignSelf: 'center', width: '100%' } : undefined}>
       <View style={{ gap: spacing.xs, marginTop: spacing.lg }}>
         <Text variant="h1">Welcome back</Text>
         <Text variant="body" tone="secondary">
