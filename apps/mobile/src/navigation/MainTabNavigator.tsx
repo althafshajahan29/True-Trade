@@ -7,6 +7,7 @@ import { useTheme } from '../theme';
 import { useIsDesktop } from '../hooks/useIsDesktop';
 import { DesktopTopBar } from '../components/DesktopTopBar';
 import { DashboardStackNavigator } from './DashboardStackNavigator';
+import { SignalsStackNavigator } from './SignalsStackNavigator';
 import { StrategiesStackNavigator } from './StrategiesStackNavigator';
 import { BotsStackNavigator } from './BotsStackNavigator';
 import { MarketplaceStackNavigator } from './MarketplaceStackNavigator';
@@ -18,6 +19,7 @@ type IconName = keyof typeof Feather.glyphMap;
 
 const ICONS: Record<keyof MainTabParamList, IconName> = {
   DashboardTab: 'home',
+  SignalsTab: 'activity',
   StrategiesTab: 'sliders',
   BotsTab: 'cpu',
   MarketplaceTab: 'users',
@@ -57,6 +59,7 @@ export function MainTabNavigator() {
       })}
     >
       <Tab.Screen name="DashboardTab" component={DashboardStackNavigator} options={{ title: 'Dashboard' }} />
+      <Tab.Screen name="SignalsTab" component={SignalsStackNavigator} options={{ title: 'Signals' }} />
       <Tab.Screen name="StrategiesTab" component={StrategiesStackNavigator} options={{ title: 'Strategies' }} />
       <Tab.Screen name="BotsTab" component={BotsStackNavigator} options={{ title: 'Bots' }} />
       <Tab.Screen name="MarketplaceTab" component={MarketplaceStackNavigator} options={{ title: 'Copy' }} />

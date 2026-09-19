@@ -20,6 +20,19 @@ const explosiveQuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(20).optional(),
 });
 
+const newsQuerySchema = z.object({
+  limit: z.coerce.number().int().positive().max(50).optional(),
+});
+
+signalsRouter.get(
+  '/news',
+  validateQuery(newsQuerySchema),
+  asyncHandler(async (req, res) => {
+    const { limit } = req.query as unknown as z.infer<typeof newsQuerySchema>;
+    res.json({ items: signalService.recentNews(limit ?? 30) });
+  }),
+);
+
 signalsRouter.get(
   '/explosive',
   validateQuery(explosiveQuerySchema),

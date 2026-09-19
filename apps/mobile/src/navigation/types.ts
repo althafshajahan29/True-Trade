@@ -36,12 +36,16 @@ export type MoreStackParamList = {
   RiskSettings: undefined;
   Settings: undefined;
   TradeHistory: undefined;
+};
+
+export type SignalsStackParamList = {
   Signals: undefined;
   SignalDetail: { symbol: string };
 };
 
 export type MainTabParamList = {
   DashboardTab: undefined;
+  SignalsTab: undefined;
   StrategiesTab: undefined;
   BotsTab: undefined;
   MarketplaceTab: undefined;

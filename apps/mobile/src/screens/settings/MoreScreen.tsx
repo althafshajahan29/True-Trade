@@ -15,13 +15,6 @@ export function MoreScreen({ navigation }: Props) {
       <View style={{ marginTop: spacing.xl }}>
         <Card padded={false}>
           <View style={{ paddingHorizontal: spacing.lg }}>
-            <ListRow
-              label="Market Intelligence"
-              subtitle="Momentum, explosive demand & news signals"
-              showChevron
-              onPress={() => navigation.navigate('Signals')}
-            />
-            <Divider />
             <ListRow label="Analytics" subtitle="Portfolio performance & trends" showChevron onPress={() => navigation.navigate('Analytics')} />
             <Divider />
             <ListRow label="Trade history" subtitle="Every trade across bots & copy trading" showChevron onPress={() => navigation.navigate('TradeHistory')} />

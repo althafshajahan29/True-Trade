@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { Pressable, View } from 'react-native';
-import { average, Bot, SignalScore, Trade } from '@right-trade/shared';
+import { average, Bot, NewsHeadline, SignalScore, Trade } from '@right-trade/shared';
 import { EquityCurveChart } from '../../components/charts/EquityCurveChart';
 import { Avatar, Badge, botStatusTone, Card, EmptyState, ErrorState, LoadingState, MarketPulseGauge, Screen, ScoreBar, Section, StatGrid, StatTile, Text } from '../../components/ui';
 import { spacing } from '../../theme/tokens';
@@ -24,6 +24,7 @@ export function DashboardScreen({ navigation }: Props) {
   const bots = useAsync(() => botsApi.list(), []);
   const trades = useAsync(() => tradesApi.list(), []);
   const signals = useAsync(() => signalsApi.list(), []);
+  const news = useAsync(() => signalsApi.news(4), []);
 
   useFocusEffect(
     useCallback(() => {
@@ -31,6 +32,7 @@ export function DashboardScreen({ navigation }: Props) {
       bots.refetch();
       trades.refetch();
       signals.refetch();
+      news.refetch();
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []),
   );
@@ -41,6 +43,7 @@ export function DashboardScreen({ navigation }: Props) {
     bots.refresh();
     trades.refresh();
     signals.refresh();
+    news.refresh();
   };
 
   if (overview.isLoading) return <Screen><LoadingState label="Loading your dashboard…" /></Screen>;
@@ -100,7 +103,7 @@ export function DashboardScreen({ navigation }: Props) {
       <Section
         title="Market pulse"
         actionLabel="View all"
-        onAction={() => (navigation.getParent()?.navigate as (...args: unknown[]) => void)?.('MoreTab', { screen: 'Signals' })}
+        onAction={() => (navigation.getParent()?.navigate as (...args: unknown[]) => void)?.('SignalsTab')}
       >
         {signals.isLoading ? (
           <LoadingState label="Computing signal scores…" />
@@ -116,7 +119,7 @@ export function DashboardScreen({ navigation }: Props) {
                 key={score.symbol}
                 score={score}
                 onPress={() =>
-                  (navigation.getParent()?.navigate as (...args: unknown[]) => void)?.('MoreTab', {
+                  (navigation.getParent()?.navigate as (...args: unknown[]) => void)?.('SignalsTab', {
                     screen: 'SignalDetail',
                     params: { symbol: score.symbol },
                   })
@@ -124,6 +127,38 @@ export function DashboardScreen({ navigation }: Props) {
               />
             ))}
           </View>
+        )}
+      </Section>
+
+      <Section
+        title="Latest headlines"
+        actionLabel="View all"
+        onAction={() => (navigation.getParent()?.navigate as (...args: unknown[]) => void)?.('SignalsTab')}
+      >
+        {news.isLoading ? (
+          <LoadingState label="Fetching recent headlines…" />
+        ) : (news.data ?? []).length === 0 ? (
+          <EmptyState
+            title="No headlines yet"
+            message="Set a FINNHUB_API_KEY on the server to pull in real news headlines — without one, this feed stays empty rather than showing anything fake."
+          />
+        ) : (
+          <Card padded={false}>
+            {(news.data ?? []).slice(0, 4).map((headline, i, arr) => (
+              <View key={headline.id}>
+                <HeadlineTeaserRow
+                  headline={headline}
+                  onPress={() =>
+                    (navigation.getParent()?.navigate as (...args: unknown[]) => void)?.('SignalsTab', {
+                      screen: 'SignalDetail',
+                      params: { symbol: headline.symbol },
+                    })
+                  }
+                />
+                {i < arr.length - 1 && <View style={{ height: 1, backgroundColor: palette.divider, marginHorizontal: spacing.lg }} />}
+              </View>
+            ))}
+          </Card>
         )}
       </Section>
 
@@ -203,6 +238,26 @@ function SignalPulseRow({ score, onPress }: { score: SignalScore; onPress: () =>
         </View>
         <ScoreBar score={score.compositeScore} height={6} />
       </Card>
+    </Pressable>
+  );
+}
+
+function HeadlineTeaserRow({ headline, onPress }: { headline: NewsHeadline; onPress: () => void }) {
+  const sentimentTone = headline.sentiment === 'positive' ? 'positive' : headline.sentiment === 'negative' ? 'negative' : 'neutral';
+  return (
+    <Pressable onPress={onPress}>
+      <View style={{ padding: spacing.lg, gap: spacing.xs }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text variant="caption" tone="secondary">
+            {headline.symbol}
+          </Text>
+          <Badge label={headline.sentiment} tone={sentimentTone} />
+        </View>
+        <Text variant="body">{headline.headline}</Text>
+        <Text variant="caption" tone="tertiary">
+          {headline.source} · {formatRelativeTime(headline.publishedAt)}
+        </Text>
+      </View>
     </Pressable>
   );
 }

@@ -105,4 +105,10 @@ export const signalRepo = {
       .all(symbol, limit) as HeadlineRow[];
     return rows.map(mapHeadlineRow);
   },
+
+  /** Cross-symbol feed, most recent first — powers the dashboard/Signals news feed rather than one symbol's detail page. */
+  listRecentHeadlines(limit = 30): NewsHeadline[] {
+    const rows = getDb().prepare('SELECT * FROM news_headlines ORDER BY published_at DESC LIMIT ?').all(limit) as HeadlineRow[];
+    return rows.map(mapHeadlineRow);
+  },
 };

@@ -8,10 +8,10 @@ import { useTheme } from '../../theme';
 import { signalsApi } from '../../api/endpoints';
 import { useAsync } from '../../hooks/useAsync';
 import { formatRelativeTime } from '../../utils/format';
-import { MoreStackParamList } from '../../navigation/types';
+import { SignalsStackParamList } from '../../navigation/types';
 import { classificationLabel, classificationTone } from './classification';
 
-type Props = NativeStackScreenProps<MoreStackParamList, 'SignalDetail'>;
+type Props = NativeStackScreenProps<SignalsStackParamList, 'SignalDetail'>;
 
 export function SignalDetailScreen({ route }: Props) {
   const { symbol } = route.params;

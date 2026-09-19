@@ -137,4 +137,5 @@ export const signalsApi = {
   explosive: (limit = 5) => api.get<Items<ExplosiveCandidate>>(`/signals/explosive?limit=${limit}`).then((r) => r.items),
   detail: (symbol: string) =>
     api.get<{ score: SignalScore; headlines: NewsHeadline[] }>(`/signals/detail?symbol=${encodeURIComponent(symbol)}`),
+  news: (limit = 30) => api.get<Items<NewsHeadline>>(`/signals/news?limit=${limit}`).then((r) => r.items),
 };

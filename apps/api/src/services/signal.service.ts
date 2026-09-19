@@ -101,6 +101,11 @@ export const signalService = {
     return { score, headlines: signalRepo.listHeadlines(symbol) };
   },
 
+  /** Cross-symbol headline feed for the dashboard/Signals screen — not scoped to one symbol like getDetail's headlines. */
+  recentNews(limit = 30): NewsHeadline[] {
+    return signalRepo.listRecentHeadlines(limit);
+  },
+
   listExplosiveCandidates(limit = 5): ExplosiveCandidate[] {
     const candidates = INSTRUMENTS.map((i) => computeExplosiveCandidate(i.symbol, i.assetClass, getLookbackCandles(i.symbol))).filter(
       (c): c is ExplosiveCandidate => c !== null,
