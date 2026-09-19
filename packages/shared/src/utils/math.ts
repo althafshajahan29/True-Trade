@@ -27,3 +27,14 @@ export function standardDeviation(values: number[]): number {
   const variance = average(values.map((v) => (v - mean) ** 2));
   return Math.sqrt(variance);
 }
+
+export type ScoreClassification = 'strong_bullish' | 'bullish' | 'neutral' | 'bearish' | 'strong_bearish';
+
+/** Buckets a -100..100 composite score into a classification. Shared so the API and the client agree on the same thresholds. */
+export function classifyScore(score: number): ScoreClassification {
+  if (score >= 60) return 'strong_bullish';
+  if (score >= 20) return 'bullish';
+  if (score <= -60) return 'strong_bearish';
+  if (score <= -20) return 'bearish';
+  return 'neutral';
+}

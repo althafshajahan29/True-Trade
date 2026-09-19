@@ -14,7 +14,10 @@ interface StatTileProps {
 
 export function StatTile({ label, value, delta, deltaTone = 'secondary', style }: StatTileProps) {
   return (
-    <Card style={[{ flex: 1, gap: spacing.xs }, style]}>
+    // flexGrow/flexBasis + minWidth inside a wrapping row (see StatGrid) is
+    // the classic "auto-fit grid" trick: 2-across on a phone, naturally
+    // reflows to 3-4-across as the container gets wider on desktop.
+    <Card style={[{ flexGrow: 1, flexBasis: 160, minWidth: 160, gap: spacing.xs }, style]}>
       <Text variant="caption" tone="secondary">
         {label}
       </Text>
@@ -28,6 +31,6 @@ export function StatTile({ label, value, delta, deltaTone = 'secondary', style }
   );
 }
 
-export function StatRow({ children }: { children: React.ReactNode }) {
-  return <View style={{ flexDirection: 'row', gap: spacing.md }}>{children}</View>;
+export function StatGrid({ children }: { children: React.ReactNode }) {
+  return <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>{children}</View>;
 }

@@ -2,12 +2,14 @@ import {
   AssetClass,
   average,
   Candle,
+  classifyScore,
   ExplosiveCandidate,
   round,
-  SignalClassification,
   SignalFactor,
 } from '@right-trade/shared';
 import { macd, rsi, sma } from './indicators';
+
+export { classifyScore };
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
@@ -123,14 +125,6 @@ export function explosiveCandidateToFactor(candidate: ExplosiveCandidate | null)
     label: candidate.explosiveScore > 60 ? 'Explosive activity' : candidate.explosiveScore > 30 ? 'Elevated activity' : 'Normal activity',
     detail: candidate.reason,
   };
-}
-
-export function classifyScore(score: number): SignalClassification {
-  if (score >= 60) return 'strong_bullish';
-  if (score >= 20) return 'bullish';
-  if (score <= -60) return 'strong_bearish';
-  if (score <= -20) return 'bearish';
-  return 'neutral';
 }
 
 /**

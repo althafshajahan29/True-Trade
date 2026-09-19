@@ -54,7 +54,7 @@ export function SignalsScreen({ navigation }: Props) {
         ) : (explosive.data ?? []).length === 0 || (explosive.data ?? []).every((c) => c.explosiveScore < 5) ? (
           <EmptyState title="Nothing unusual right now" message="No symbols are showing abnormal volume, price, or volatility activity." />
         ) : (
-          <View style={{ gap: spacing.sm }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
             {(explosive.data ?? [])
               .filter((c) => c.explosiveScore >= 5)
               .map((candidate) => (
@@ -90,7 +90,7 @@ export function SignalsScreen({ navigation }: Props) {
 
 function ExplosiveRow({ candidate, onPress }: { candidate: ExplosiveCandidate; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress}>
+    <Pressable onPress={onPress} style={{ flexGrow: 1, flexBasis: 280, minWidth: 280 }}>
       <Card>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <Text variant="bodyMedium">{candidate.symbol}</Text>

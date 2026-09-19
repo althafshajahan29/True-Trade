@@ -1,6 +1,7 @@
 import { AssetClass, ISODateString } from './common';
+import { ScoreClassification } from '../utils/math';
 
-export type SignalClassification = 'strong_bullish' | 'bullish' | 'neutral' | 'bearish' | 'strong_bearish';
+export type SignalClassification = ScoreClassification;
 
 /** One input into a composite signal score, kept transparent (never a black box). */
 export interface SignalFactor {

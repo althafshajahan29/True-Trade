@@ -2,9 +2,9 @@ import React, { useCallback } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { Pressable, View } from 'react-native';
-import { Bot, SignalScore, Trade } from '@right-trade/shared';
+import { average, Bot, SignalScore, Trade } from '@right-trade/shared';
 import { EquityCurveChart } from '../../components/charts/EquityCurveChart';
-import { Avatar, Badge, botStatusTone, Card, EmptyState, ErrorState, LoadingState, Screen, ScoreBar, Section, StatRow, StatTile, Text } from '../../components/ui';
+import { Avatar, Badge, botStatusTone, Card, EmptyState, ErrorState, LoadingState, MarketPulseGauge, Screen, ScoreBar, Section, StatGrid, StatTile, Text } from '../../components/ui';
 import { spacing } from '../../theme/tokens';
 import { useTheme } from '../../theme';
 import { useAuthStore } from '../../store/authStore';
@@ -68,12 +68,10 @@ export function DashboardScreen({ navigation }: Props) {
         {user && <Avatar name={user.displayName} color={user.avatarColor} />}
       </View>
 
-      <View style={{ marginTop: spacing.xl, gap: spacing.md }}>
-        <StatRow>
+      <View style={{ marginTop: spacing.xl }}>
+        <StatGrid>
           <StatTile label="Equity" value={formatCurrency(data.equity)} />
           <StatTile label="Balance" value={formatCurrency(data.balance)} />
-        </StatRow>
-        <StatRow>
           <StatTile
             label="Unrealized P/L"
             value={formatCurrency(data.unrealizedPnl)}
@@ -86,7 +84,7 @@ export function DashboardScreen({ navigation }: Props) {
             delta={formatPercent(data.realizedPnlTodayPercent)}
             deltaTone={data.realizedPnlToday >= 0 ? 'positive' : 'negative'}
           />
-        </StatRow>
+        </StatGrid>
       </View>
 
       <Card style={{ marginTop: spacing.xl }}>
@@ -109,7 +107,10 @@ export function DashboardScreen({ navigation }: Props) {
         ) : (signals.data ?? []).length === 0 ? (
           <EmptyState title="No signals yet" message="Market Intelligence scores refresh in the background." />
         ) : (
-          <View style={{ gap: spacing.sm }}>
+          <View style={{ gap: spacing.lg }}>
+            <Card>
+              <MarketPulseGauge score={average((signals.data ?? []).map((s) => s.compositeScore))} label={`Across ${(signals.data ?? []).length} tracked symbols`} />
+            </Card>
             {(signals.data ?? []).slice(0, 3).map((score) => (
               <SignalPulseRow
                 key={score.symbol}
