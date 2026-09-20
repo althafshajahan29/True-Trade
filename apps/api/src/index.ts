@@ -1,9 +1,11 @@
+import { INSTRUMENTS } from '@right-trade/shared';
 import { createApp } from './app';
 import { config } from './config';
 import { getDb } from './db/connection';
 import { tickAllRunningBots } from './engines/paperTrading.engine';
 import { tickCopySubscriptions } from './services/copyTrading.service';
 import { signalService } from './services/signal.service';
+import { isLiveQuoteSupported, refreshRealQuote } from './services/liveQuote.service';
 
 getDb(); // ensure schema is created before serving traffic
 
@@ -42,3 +44,16 @@ setInterval(() => {
     console.error('Signal refresh loop error:', err);
   });
 }, config.signalRefreshIntervalMs);
+
+// Real quotes (stocks via Finnhub, supported crypto pairs via CoinGecko) —
+// polled on their own fast interval so /market/quote and the paper trading
+// tick loop see genuinely live prices, not just the simulated walk.
+const liveQuoteInstruments = INSTRUMENTS.filter((i) => isLiveQuoteSupported(i.assetClass));
+function pollLiveQuotes(): void {
+  Promise.all(liveQuoteInstruments.map((i) => refreshRealQuote(i.symbol, i.assetClass))).catch((err) => {
+    // eslint-disable-next-line no-console
+    console.error('Live quote refresh loop error:', err);
+  });
+}
+pollLiveQuotes();
+setInterval(pollLiveQuotes, config.liveQuoteRefreshIntervalMs);

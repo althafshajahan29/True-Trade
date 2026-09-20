@@ -2,13 +2,14 @@ import React, { useCallback } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { Pressable, View } from 'react-native';
-import { ExplosiveCandidate, NewsHeadline, SignalScore } from '@right-trade/shared';
+import { ExplosiveCandidate, NewsHeadline, Quote, SignalScore } from '@right-trade/shared';
 import { Badge, Card, EmptyState, ErrorState, LoadingState, Screen, ScoreBar, Section, Text } from '../../components/ui';
 import { spacing } from '../../theme/tokens';
 import { useTheme } from '../../theme';
 import { signalsApi } from '../../api/endpoints';
 import { useAsync } from '../../hooks/useAsync';
-import { formatRelativeTime } from '../../utils/format';
+import { useQuotes } from '../../hooks/useQuotes';
+import { formatCurrency, formatPercent, formatRelativeTime } from '../../utils/format';
 import { SignalsStackParamList } from '../../navigation/types';
 import { classificationLabel, classificationTone } from './classification';
 
@@ -19,6 +20,7 @@ export function SignalsScreen({ navigation }: Props) {
   const signals = useAsync(() => signalsApi.list(), []);
   const explosive = useAsync(() => signalsApi.explosive(5), []);
   const news = useAsync(() => signalsApi.news(20), []);
+  const quotes = useQuotes((signals.data ?? []).map((s) => s.symbol));
 
   useFocusEffect(
     useCallback(() => {
@@ -101,7 +103,7 @@ export function SignalsScreen({ navigation }: Props) {
           <Card padded={false}>
             {(signals.data ?? []).map((score, i) => (
               <View key={score.symbol}>
-                <SignalRow score={score} onPress={() => navigation.navigate('SignalDetail', { symbol: score.symbol })} />
+                <SignalRow score={score} quote={quotes[score.symbol]} onPress={() => navigation.navigate('SignalDetail', { symbol: score.symbol })} />
                 {i < (signals.data ?? []).length - 1 && (
                   <View style={{ height: 1, backgroundColor: palette.divider, marginHorizontal: spacing.lg }} />
                 )}
@@ -153,12 +155,25 @@ function NewsRow({ headline, onPress }: { headline: NewsHeadline; onPress: () =>
   );
 }
 
-function SignalRow({ score, onPress }: { score: SignalScore; onPress: () => void }) {
+function SignalRow({ score, quote, onPress }: { score: SignalScore; quote?: Quote; onPress: () => void }) {
   return (
     <Pressable onPress={onPress}>
       <View style={{ padding: spacing.lg, gap: spacing.sm }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Text variant="bodyMedium">{score.symbol}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+            <Text variant="bodyMedium">{score.symbol}</Text>
+            {quote && (
+              <>
+                <Text variant="caption" tone="secondary">
+                  {formatCurrency(quote.price)}
+                </Text>
+                <Text variant="caption" tone={quote.changePercent24h >= 0 ? 'positive' : 'negative'}>
+                  {formatPercent(quote.changePercent24h)}
+                </Text>
+                {quote.isLive && <Badge label="live" tone="positive" dot />}
+              </>
+            )}
+          </View>
           <Badge label={classificationLabel(score.classification)} tone={classificationTone(score.classification)} />
         </View>
         <ScoreBar score={score.compositeScore} />

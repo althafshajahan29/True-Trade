@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { Pressable, View } from 'react-native';
-import { average, Bot, NewsHeadline, SignalScore, Trade } from '@right-trade/shared';
+import { average, Bot, NewsHeadline, Quote, SignalScore, Trade } from '@right-trade/shared';
 import { EquityCurveChart } from '../../components/charts/EquityCurveChart';
 import { Avatar, Badge, botStatusTone, Card, EmptyState, ErrorState, LoadingState, MarketPulseGauge, Screen, ScoreBar, Section, StatGrid, StatTile, Text } from '../../components/ui';
 import { spacing } from '../../theme/tokens';
@@ -10,6 +10,7 @@ import { useTheme } from '../../theme';
 import { useAuthStore } from '../../store/authStore';
 import { analyticsApi, botsApi, signalsApi, tradesApi } from '../../api/endpoints';
 import { useAsync } from '../../hooks/useAsync';
+import { useQuotes } from '../../hooks/useQuotes';
 import { formatCurrency, formatPercent, formatRelativeTime } from '../../utils/format';
 import { DashboardStackParamList } from '../../navigation/types';
 import { classificationLabel, classificationTone } from '../signals/classification';
@@ -25,6 +26,7 @@ export function DashboardScreen({ navigation }: Props) {
   const trades = useAsync(() => tradesApi.list(), []);
   const signals = useAsync(() => signalsApi.list(), []);
   const news = useAsync(() => signalsApi.news(4), []);
+  const quotes = useQuotes((signals.data ?? []).slice(0, 3).map((s) => s.symbol));
 
   useFocusEffect(
     useCallback(() => {
@@ -118,6 +120,7 @@ export function DashboardScreen({ navigation }: Props) {
               <SignalPulseRow
                 key={score.symbol}
                 score={score}
+                quote={quotes[score.symbol]}
                 onPress={() =>
                   (navigation.getParent()?.navigate as (...args: unknown[]) => void)?.('SignalsTab', {
                     screen: 'SignalDetail',
@@ -228,12 +231,22 @@ function BotRow({ bot, onPress }: { bot: Bot; onPress: () => void }) {
   );
 }
 
-function SignalPulseRow({ score, onPress }: { score: SignalScore; onPress: () => void }) {
+function SignalPulseRow({ score, quote, onPress }: { score: SignalScore; quote?: Quote; onPress: () => void }) {
   return (
     <Pressable onPress={onPress}>
       <Card style={{ gap: spacing.sm }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Text variant="bodyMedium">{score.symbol}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+            <Text variant="bodyMedium">{score.symbol}</Text>
+            {quote && (
+              <>
+                <Text variant="caption" tone="secondary">
+                  {formatCurrency(quote.price)}
+                </Text>
+                {quote.isLive && <Badge label="live" tone="positive" dot />}
+              </>
+            )}
+          </View>
           <Badge label={classificationLabel(score.classification)} tone={classificationTone(score.classification)} />
         </View>
         <ScoreBar score={score.compositeScore} height={6} />

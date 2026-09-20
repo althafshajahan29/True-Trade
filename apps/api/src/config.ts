@@ -11,5 +11,9 @@ export const config = {
   // Get a free key at finnhub.io — without it, news sentiment is simply
   // omitted (the composite score reweights across the remaining factors).
   newsApiKey: process.env.FINNHUB_API_KEY ?? '',
-  signalRefreshIntervalMs: Number(process.env.SIGNAL_REFRESH_INTERVAL_MS ?? 10 * 60_000),
+  signalRefreshIntervalMs: Number(process.env.SIGNAL_REFRESH_INTERVAL_MS ?? 3 * 60_000),
+  // How often to poll real quotes (Finnhub for stocks, CoinGecko for
+  // supported crypto pairs) — comfortably under both providers' free-tier
+  // rate limits even with ~20 tracked symbols.
+  liveQuoteRefreshIntervalMs: Number(process.env.LIVE_QUOTE_REFRESH_INTERVAL_MS ?? 30_000),
 };

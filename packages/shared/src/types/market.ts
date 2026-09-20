@@ -18,4 +18,6 @@ export interface Quote {
   ask: number;
   timestamp: number;
   changePercent24h: number;
+  /** True when price/changePercent24h came from a real market data provider (Finnhub for stocks, CoinGecko for supported crypto pairs) rather than the simulated price walk. */
+  isLive: boolean;
 }

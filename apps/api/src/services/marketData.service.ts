@@ -1,6 +1,7 @@
 import { Candle, INSTRUMENTS, AssetClass, Quote, Timeframe } from '@right-trade/shared';
 import { candleRepo } from '../repositories/candle.repo';
 import { ValidationError } from '../utils/errors';
+import { getCachedRealQuote } from './liveQuote.service';
 
 const WARMUP_CANDLES = 300;
 
@@ -25,6 +26,21 @@ const BASE_PRICES: Record<string, number> = {
   AAPL: 189,
   TSLA: 245,
   NVDA: 880,
+  MSFT: 425,
+  GOOGL: 165,
+  AMZN: 185,
+  META: 560,
+  AMD: 145,
+  NFLX: 680,
+  JPM: 210,
+  V: 275,
+  DIS: 95,
+  INTC: 22,
+  ORCL: 145,
+  CRM: 260,
+  BA: 180,
+  WMT: 68,
+  JNJ: 155,
   SPX500: 5200,
   'XAU/USD': 2320,
 };
@@ -178,8 +194,27 @@ export const marketDataService = {
     return candleRepo.findRange(symbol, timeframe, startMs, endMs);
   },
 
-  /** Advances and returns an in-memory "live" quote — used by the paper trading engine's tick loop. */
+  /**
+   * Returns a "live" quote — used by both the /market/quote route and the
+   * paper trading engine's tick loop. Prefers a real, recently-fetched price
+   * (see liveQuote.service) for symbols that support one; falls back to the
+   * simulated random-walk price otherwise, or if the real quote is stale.
+   */
   getLiveQuote(symbol: string): Quote {
+    const real = getCachedRealQuote(symbol);
+    if (real) {
+      const spread = real.price * 0.0004;
+      return {
+        symbol,
+        price: round(real.price, 5),
+        bid: round(real.price - spread / 2, 5),
+        ask: round(real.price + spread / 2, 5),
+        timestamp: Date.now(),
+        changePercent24h: round(real.changePercent24h, 2),
+        isLive: true,
+      };
+    }
+
     const state = getLiveState(symbol);
     const volatility = VOLATILITY[assetClassOf(symbol)];
     const change = (state.rng() - 0.5) * 2 * volatility * 0.5;
@@ -192,6 +227,7 @@ export const marketDataService = {
       ask: round(state.price + spread / 2, 5),
       timestamp: Date.now(),
       changePercent24h: round(change * 100 * 48, 2),
+      isLive: false,
     };
   },
 };

@@ -5,9 +5,9 @@ import { NewsHeadline, SignalFactor } from '@right-trade/shared';
 import { Badge, Card, ErrorState, LoadingState, Screen, ScoreBar, Section, Text } from '../../components/ui';
 import { spacing } from '../../theme/tokens';
 import { useTheme } from '../../theme';
-import { signalsApi } from '../../api/endpoints';
+import { marketApi, signalsApi } from '../../api/endpoints';
 import { useAsync } from '../../hooks/useAsync';
-import { formatRelativeTime } from '../../utils/format';
+import { formatCurrency, formatPercent, formatRelativeTime } from '../../utils/format';
 import { SignalsStackParamList } from '../../navigation/types';
 import { classificationLabel, classificationTone } from './classification';
 
@@ -17,6 +17,7 @@ export function SignalDetailScreen({ route }: Props) {
   const { symbol } = route.params;
   const { palette } = useTheme();
   const { data, isLoading, error, refetch } = useAsync(() => signalsApi.detail(symbol), [symbol]);
+  const quote = useAsync(() => marketApi.quote(symbol), [symbol]);
 
   if (isLoading) return <Screen><LoadingState label={`Loading ${symbol} signal…`} /></Screen>;
   if (error || !data) {
@@ -32,7 +33,18 @@ export function SignalDetailScreen({ route }: Props) {
   return (
     <Screen>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <Text variant="h1">{score.symbol}</Text>
+        <View style={{ gap: spacing.xs }}>
+          <Text variant="h1">{score.symbol}</Text>
+          {quote.data && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+              <Text variant="bodyLg">{formatCurrency(quote.data.price)}</Text>
+              <Text variant="body" tone={quote.data.changePercent24h >= 0 ? 'positive' : 'negative'}>
+                {formatPercent(quote.data.changePercent24h)}
+              </Text>
+              <Badge label={quote.data.isLive ? 'live' : 'simulated'} tone={quote.data.isLive ? 'positive' : 'neutral'} dot />
+            </View>
+          )}
+        </View>
         <Badge label={classificationLabel(score.classification)} tone={classificationTone(score.classification)} />
       </View>
 
